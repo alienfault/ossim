@@ -1,0 +1,12 @@
+#!/bin/bash
+
+while true; do
+    sleep 5
+
+    pid=`pgrep -f 'openvasmd \-\-database'`
+
+    if [ "$pid" ]; then
+        kill -15 $pid
+    fi
+done
+  

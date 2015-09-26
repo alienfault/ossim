@@ -1,0 +1,268 @@
+#!/bin/sh
+
+# OpenVAS
+# $Id$
+# Description: Script for checking completeness and readiness
+# of OpenVAS.
+#
+# Authors:
+# Jan-Oliver Wagner <jan-oliver.wagner@greenbone.net>
+# Michael Wiegand <michael.wiegand@greenbone.net>
+#
+# Copyright:
+# Copyright (C) 2011-2015 Greenbone Networks GmbH
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License version 2,
+# or at your option any later version, as published by the
+# Free Software Foundation
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
+
+LOG=/tmp/openvas-manager-check-database.log
+CHECKVERSION=2.3.0
+
+# Current default is OpenVAS-8:
+VER="8"
+SCANNER_MAJOR="5"
+SCANNER_MINOR="0"
+MANAGER_MAJOR="6"
+MANAGER_MINOR="0"
+ADMINISTRATOR_MAJOR="0"
+ADMINISTRATOR_MINOR="0"
+GSA_MAJOR="6"
+GSA_MINOR="0"
+CLI_MAJOR="1"
+CLI_MINOR="4"
+
+if [ "$1" = "--v9" -o "$2" = "--v9" ]
+then
+  VER="9"
+  SCANNER_MAJOR="5"
+  SCANNER_MINOR="1"
+  MANAGER_MAJOR="6"
+  MANAGER_MINOR="1"
+  ADMINISTRATOR_MAJOR="0"
+  ADMINISTRATOR_MINOR="0"
+  GSA_MAJOR="6"
+  GSA_MINOR="1"
+  CLI_MAJOR="1"
+  CLI_MINOR="4"
+elif [ "$1" = "--v8" -o "$2" = "--v8" ]
+then
+  VER="8"
+  SCANNER_MAJOR="5"
+  SCANNER_MINOR="0"
+  MANAGER_MAJOR="6"
+  MANAGER_MINOR="0"
+  ADMINISTRATOR_MAJOR="0"
+  ADMINISTRATOR_MINOR="0"
+  GSA_MAJOR="6"
+  GSA_MINOR="0"
+  CLI_MAJOR="1"
+  CLI_MINOR="4"
+elif [ "$1" = "--v7" -o "$2" = "--v7" ]
+then
+  VER="7"
+  SCANNER_MAJOR="4"
+  SCANNER_MINOR="0"
+  MANAGER_MAJOR="5"
+  MANAGER_MINOR="0"
+  ADMINISTRATOR_MAJOR="0"
+  ADMINISTRATOR_MINOR="0"
+  GSA_MAJOR="5"
+  GSA_MINOR="0"
+  CLI_MAJOR="1"
+  CLI_MINOR="3"
+elif [ "$1" = "--v6" -o "$2" = "--v6" ]
+then
+  VER="6"
+  SCANNER_MAJOR="3"
+  SCANNER_MINOR="4"
+  MANAGER_MAJOR="4"
+  MANAGER_MINOR="0"
+  ADMINISTRATOR_MAJOR="1"
+  ADMINISTRATOR_MINOR="3"
+  GSA_MAJOR="4"
+  GSA_MINOR="0"
+  CLI_MAJOR="1"
+  CLI_MINOR="2"
+  GSD_MAJOR="1"
+  GSD_MINOR="2"
+fi
+
+echo "openvas-manager-check-database $CHECKVERSION"
+
+if [ "$VER" = "8" ]
+then
+  echo "  (add '--v6' or '--v7' or '--9' if you want to check for another OpenVAS version)"
+fi
+
+log_and_print ()
+{
+  echo "       " $1
+  echo "       " $1 >> $LOG
+}
+
+check_failed ()
+{
+  echo ""  
+  echo "It seems like the OpenVAS manager database installation is KO."    
+
+  exit 1
+}
+
+
+# LOG start
+echo "openvas-manager-check-database $CHECKVERSION" > $LOG
+echo "  Date: " `date -R` >> $LOG
+echo "" >> $LOG
+
+CAFILE=`openvassd -s 2>>$LOG | grep ca_file | sed -e "s/^ca_file = //"`
+PLUGINSFOLDER=`openvassd -s 2>>$LOG | grep plugins_folder | sed -e "s/^plugins_folder = //"`
+
+echo "Checking OpenVAS Manager Database... "
+
+echo "Checking presence of OpenVAS Manager ..." >> $LOG
+openvasmd --version >> $LOG 2>&1
+if [ $? -ne 0 ]
+then
+  log_and_print "ERROR: No OpenVAS Manager (openvasmd) found."
+  log_and_print "FIX: Please install OpenVAS Manager."
+  check_failed
+fi
+echo "" >> $LOG
+
+VERSION=`openvasmd --version | head -1 | sed -e "s/OpenVAS Manager //"`
+
+echo "Checking OpenVAS Manager database ..." >> $LOG
+# Guess openvas state dir from $PLUGINSFOLDER
+STATEDIR=`dirname $PLUGINSFOLDER`
+TASKSDB="$STATEDIR/mgr/tasks.db"
+if [ ! -e $TASKSDB ]
+then
+  log_and_print "ERROR: No OpenVAS Manager database found. (Tried: $TASKSDB)"
+  log_and_print "FIX: Run 'openvasmd --rebuild' while OpenVAS Scanner is running."
+
+  OPENVASSD_RUNNING=`ps -Af | grep "openvassd: [Ww]aiting for incoming connections" | grep -v grep | wc -l`
+  if [ $OPENVASSD_RUNNING -eq 0 ]
+  then
+    log_and_print "WARNING: OpenVAS Scanner is NOT running!" ;
+    log_and_print "SUGGEST: Start OpenVAS Scanner (openvassd)." ;
+  fi
+
+  check_failed
+fi
+echo "" >> $LOG
+
+log_and_print "OK: OpenVAS Manager database found in $TASKSDB."
+
+echo "Checking access rights of OpenVAS Manager database ..." >> $LOG
+TASKSDBPERMS=`stat -c "%a" "$TASKSDB"`
+if [ "$TASKSDBPERMS" != "600" ]
+then
+  log_and_print "ERROR: The access rights of the OpenVAS Manager database are incorrect."
+  log_and_print "FIX: Run 'chmod 600 $TASKSDB'."
+  check_failed
+fi
+echo "" >> $LOG
+
+log_and_print "OK: Access rights for the OpenVAS Manager database are correct."
+
+if [ $ADMINISTRATOR_MAJOR = "0" ]
+then
+  echo "Checking if users exist ..." >> $LOG
+  if [ $VER != "7" ]
+  then
+    USERCOUNT=`openvasmd --get-users | sed -e "/^$/d" | wc -l`
+  else
+    USERCOUNT=`openvasmd --list-users | sed -e "/^$/d" | wc -l`
+  fi
+  if [ $USERCOUNT -eq 0 ]
+  then
+    log_and_print "ERROR: No users found. You need to create at least one user to log in."
+    log_and_print "       It is recommended to have at least one user with role Admin."
+    log_and_print "FIX: create a user by running 'openvasmd --create-user=<name> --role=Admin && openvasmd --user=<name> --new-password=<password>'"
+    check_failed
+  else
+    log_and_print "OK: At least one user exists."
+  fi
+  echo "" >> $LOG
+fi
+
+# TODO: Do a check for presence of at least one Admin user.
+
+echo "Checking sqlite3 presence ..." >> $LOG
+SQLITE3=`type sqlite3 2> /dev/null`
+if [ $? -ne 0 ]
+then
+  log_and_print "WARNING: Could not find sqlite3 binary, extended manager checks of the OpenVAS Manager installation are disabled."
+  log_and_print "SUGGEST: Install sqlite3."
+  HAVE_SQLITE=0
+else
+  log_and_print "OK: sqlite3 found, extended checks of the OpenVAS Manager installation enabled."
+  HAVE_SQLITE=1
+fi
+echo "" >> $LOG
+
+if [ $HAVE_SQLITE -eq 1 ]
+then
+  echo "Checking OpenVAS Manager database revision ..." >> $LOG
+  TASKSDBREV=`sqlite3 $TASKSDB "select value from meta where name='database_version';"`
+  if [ -z $TASKSDBREV ]
+  then
+    log_and_print "ERROR: Could not determine database revision, database corrupt or in invalid format."
+    log_and_print "FIX: Delete database at $TASKSDB and rebuild it."
+    check_failed
+  else
+    log_and_print "OK: OpenVAS Manager database is at revision $TASKSDBREV."
+  fi
+  echo "Checking database revision expected by OpenVAS Manager ..." >> $LOG
+  MANAGERDBREV=`openvasmd --version | grep "Manager DB revision" | sed -e "s/.*\ //"`
+  if [ -z $MANAGERDBREV ]
+  then
+    log_and_print "ERROR: Could not determine database revision expected by OpenVAS Manager."
+    log_and_print "FIX: Ensure OpenVAS Manager is installed correctly."
+    check_failed
+  else
+    log_and_print "OK: OpenVAS Manager expects database at revision $MANAGERDBREV."
+  fi
+  if [ $TASKSDBREV -lt $MANAGERDBREV ]
+  then
+    log_and_print "ERROR: Database schema is out of date."
+    log_and_print "FIX: Run 'openvasmd --migrate'."
+    check_failed
+  else
+    log_and_print "OK: Database schema is up to date."
+  fi
+  echo "Checking OpenVAS Manager database (NVT data) ..." >> $LOG
+  DBNVTCOUNT=`sqlite3 $TASKSDB "select count(*) from nvts;"`
+  if [ $DBNVTCOUNT -lt 20000 ]
+  then
+    log_and_print "ERROR: The number of NVTs in the OpenVAS Manager database is too low."
+    log_and_print "FIX: Make sure OpenVAS Scanner is running with an up-to-date NVT collection and run 'openvasmd --rebuild'."
+
+    OPENVASSD_RUNNING=`ps -Af | grep "openvassd: waiting for incoming connections" | grep -v grep | wc -l`
+    if [ $OPENVASSD_RUNNING -eq 0 ]
+    then
+      log_and_print "WARNING: OpenVAS Scanner is NOT running!" ;
+      log_and_print "SUGGEST: Start OpenVAS Scanner (openvassd)." ;
+    fi
+
+    check_failed
+  else
+    log_and_print "OK: OpenVAS Manager database contains information about $DBNVTCOUNT NVTs."
+  fi
+fi
+
+echo "" >> $LOG
+
+echo ""
+echo "It seems like the OpenVAS manager database installation is OK."

@@ -1,0 +1,195 @@
+#!/bin/bash
+# postinst script for alienvault-openvas8-feed
+#
+# see: dh_installdeb(1)
+
+set -e
+
+# summary of how this script can be called:
+#        * <postinst> `configure' <most-recently-configured-version>
+#        * <old-postinst> `abort-upgrade' <new version>
+#        * <conflictor's-postinst> `abort-remove' `in-favour' <package>
+#          <new-version>
+#        * <postinst> `abort-remove'
+#        * <deconfigured's-postinst> `abort-deconfigure' `in-favour'
+#          <failed-install-package> <version> `removing'
+#          <conflicting-package> <version>
+# for details, see http://www.debian.org/doc/debian-policy/ or
+# the debian-policy package
+
+update_profile_preferences(){
+    /usr/bin/omp -h 127.0.0.1 -p 9390 -u ossim -w ossim -iX "<commands><modify_config config_id='$1'><preference><name>Ping Host[checkbox]:Do a TCP ping</name><value>bm8=</value></preference></modify_config><modify_config config_id='$1'><preference><name>Ping Host[checkbox]:Do an ICMP ping</name><value>bm8=</value></preference></modify_config><modify_config config_id='$1'><preference><name>Ping Host[checkbox]:nmap: try also with only -sP</name><value>bm8=</value></preference></modify_config><modify_config config_id='$1'><preference><name>Ping Host[checkbox]:Report about reachable Hosts</name><value>bm8=</value></preference></modify_config><modify_config config_id='$1'><preference><name>Ping Host[checkbox]:Report about unrechable Hosts</name><value>bm8=</value></preference></modify_config><modify_config config_id='$1'><preference><name>Ping Host[checkbox]:TCP ping tries also TCP-SYN ping</name><value>bm8=</value></preference></modify_config><modify_config config_id='$1'><preference><name>Ping Host[checkbox]:Use ARP</name><value>bm8=</value></preference></modify_config><modify_config config_id='$1'><preference><name>Ping Host[checkbox]:Use nmap</name><value>bm8=</value></preference></modify_config><modify_config config_id='$1'><preference><name>Ping Host[entry]:nmap additional ports for -PA</name><value>ODA4MCwzMTI4</value></preference></modify_config></commands>"
+}
+
+configure_openvas_feed(){
+
+    set +e
+
+    # Make sure than openvas-manager init script has execution permissions
+    chmod +x /etc/init.d/openvas-manager
+
+    # These init.d script calls don't work on ISO installation but it is ok because they are already stopped
+    /etc/init.d/monit stop
+    /etc/init.d/openvas-manager stop
+
+    if [ ! -z $(pgrep openvasmd) ]; then
+        pkill -15 openvasmd;
+    fi
+
+    /etc/init.d/openvas-scanner stop
+
+    find /var/lib/openvas/plugins -maxdepth 1 -type d -not -wholename /var/lib/openvas/plugins -not -wholename /var/lib/openvas/plugins/private -not -name "." -exec rm -rf {} \;
+    find /var/lib/openvas/plugins -maxdepth 1 -type f -name '*' -print0 | xargs -0 -n 10 rm -f
+    rm -rf /var/cache/openvas
+    mkdir -p /var/cache/openvas
+
+    tar xfj /usr/share/alienvault-openvas-feed/nvt/openvas-nvt-feed-current.tar.bz2 -C /var/lib/openvas/plugins/
+    tar xfj /usr/share/alienvault-openvas-feed/nvt/cache.tar.bz2 -C /var/cache/openvas/
+
+    new_install=0
+    migration=0
+
+    if ! [ -f /var/lib/openvas/mgr/tasks.db ]
+    then
+        new_install=1
+    else
+        db_version=`sqlite3 /var/lib/openvas/mgr/tasks.db "SELECT value FROM meta WHERE name='database_version';"`
+        [ ${db_version} -lt 146 ] && migration=1
+    fi
+
+    tar xfj /usr/share/alienvault-openvas-feed/cert/cert.tar.bz2 -C /usr/share/openvas/cert/
+    tar xfj /usr/share/alienvault-openvas-feed/cert-data/cert-data-latest.tar.bz2 -C /var/lib/openvas/cert-data/
+    tar xfj /usr/share/alienvault-openvas-feed/scap-data/scap-data-latest.tar.bz2 -C /var/lib/openvas/scap-data/
+
+    retry=0;
+
+    if  [ ! -f /sbin/start-stop-daemon.REAL ]
+    then
+        /etc/init.d/openvas-scanner start > /dev/null 2>&1 &
+    else
+        /usr/sbin/openvassd > /dev/null 2>&1 &
+    fi
+
+    while [ `netstat -putan | grep -c openvassd` -eq 0 ] 
+    do
+        if [[ ${retry} -ge 500 ]]
+        then
+            exit 0
+        fi
+
+        sleep 10
+
+        retry=$(( $retry + 1 ))
+    done
+
+    # Stop again manager for possible unexpected start
+    /etc/init.d/openvas-manager stop
+
+    if [ ${migration} -eq 1 ]
+    then
+        /usr/sbin/openvasmd --migrate
+    fi
+
+    /usr/sbin/openvasmd --rebuild
+
+    if  [ ! -f /sbin/start-stop-daemon.REAL ]
+    then
+        /etc/init.d/openvas-manager start > /dev/null 2>&1 &
+    else
+        /usr/sbin/openvasmd > /dev/null 2>&1 &
+    fi
+
+    retry=0
+
+    while [ `netstat -putan | grep -c openvasmd` -eq 0 ]
+    do
+        if [ ${retry} -ge 500 ]
+        then
+            exit 0;
+        fi
+
+        sleep 10
+
+        retry=$(( $retry + 1 ))
+    done
+
+    # Check for DB problems
+    /usr/share/alienvault-openvas-feed/openvas-manager-check-database
+    if [ "$?" -eq 1 ]
+    then
+        new_install=1
+        #if [[ -e /usr/bin/mysql ]]
+        #then
+        #    /usr/share/ossim/scripts/vulnmeter/updateplugins.pl repair || true
+        #fi
+    fi
+
+    set -e
+
+    if [ ${new_install} -eq 1 ]
+    then
+        # Create ossim user
+        pass=$(openvasmd --create-user=ossim | grep -o -P "(?<=').*(?=')")
+        /usr/bin/omp -h 127.0.0.1 -p 9390 -u ossim -w ${pass} -iX "<modify_user><name>ossim</name><password>ossim</password></modify_user>"
+
+        # Get default profiles ids
+        default_id=`/usr/bin/omp -h 127.0.0.1 -p 9390 -u ossim -w ossim -iX "<GET_CONFIGS />" | grep -B 4 '<name>Full and fast</name>' | awk -F '"' '{print $2}'`
+        deep_id=`/usr/bin/omp -h 127.0.0.1 -p 9390 -u ossim -w ossim -iX "<GET_CONFIGS />" | grep -B 4 '<name>Full and very deep</name>' | awk -F '"' '{print $2}'`
+        ultimate_id=`/usr/bin/omp -h 127.0.0.1 -p 9390 -u ossim -w ossim -iX "<GET_CONFIGS />" | grep -B 4 '<name>Full and very deep ultimate</name>' | awk -F '"' '{print $2}'`
+
+        # Clone default profiles
+        /usr/bin/omp -h 127.0.0.1 -p 9390 -u ossim -w ossim -iX "<create_config><copy>${default_id}</copy><name>Default</name><comment>0</comment></create_config>"
+        /usr/bin/omp -h 127.0.0.1 -p 9390 -u ossim -w ossim -iX "<create_config><copy>${deep_id}</copy><name>Deep</name><comment>0</comment></create_config>"
+        /usr/bin/omp -h 127.0.0.1 -p 9390 -u ossim -w ossim -iX "<create_config><copy>${ultimate_id}</copy><name>Ultimate</name><comment>0</comment></create_config>"
+    fi
+
+    # Get cloned default profiles ids
+    cloned_default_id=`/usr/bin/omp -h 127.0.0.1 -p 9390 -u ossim -w ossim -iX "<GET_CONFIGS />" | grep -B 4 '<name>Default</name>' | awk -F '"' '{print $2}'`
+    cloned_deep_id=`/usr/bin/omp -h 127.0.0.1 -p 9390 -u ossim -w ossim -iX "<GET_CONFIGS />" | grep -B 4 '<name>Deep</name>' | awk -F '"' '{print $2}'`
+    cloned_ultimate_id=`/usr/bin/omp -h 127.0.0.1 -p 9390 -u ossim -w ossim -iX "<GET_CONFIGS />" | grep -B 4 '<name>Ultimate</name>' | awk -F '"' '{print $2}'`
+
+    # Update cloned default profiles preferences
+    update_profile_preferences $cloned_default_id
+    update_profile_preferences $cloned_deep_id
+    update_profile_preferences $cloned_ultimate_id
+
+    if [[ -e /usr/bin/mysql ]]
+    then
+        zcat /usr/share/doc/ossim-mysql/contrib/04-create_alienvault_data_vulnerabilities.sql.gz | ossim-db || true
+        /usr/share/ossim/scripts/vulnmeter/updateplugins.pl update custom || true
+    fi
+
+    /etc/init.d/monit start
+
+    # Check for DB problems
+    /usr/share/alienvault-openvas-feed/openvas-manager-check-database
+}
+
+case "$1" in
+    configure)
+        # If we are running inside a debian installer don't run
+        # the update process in background.
+        if  [ -f /sbin/start-stop-daemon.REAL ]
+        then
+            configure_openvas_feed > /var/log/alienvault/update/openvas8-feed.log 2>&1
+        else
+            configure_openvas_feed > /var/log/alienvault/update/openvas8-feed.log 2>&1 &
+        fi
+    ;;
+
+    abort-upgrade|abort-remove|abort-deconfigure)
+    ;;
+
+    *)
+        echo "postinst called with unknown argument \`$1'" >&2
+        exit 1
+    ;;
+
+esac
+
+# dh_installdeb will replace this with shell code automatically
+# generated by other debhelper scripts.
+
+#DEBHELPER#
+
+exit 0

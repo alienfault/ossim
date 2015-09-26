@@ -1,0 +1,27 @@
+  <group name="Unicre">
+    <rule id="101000" level="5">
+      <if_sid>18104</if_sid>
+      <id>^5136$</id>
+      <description>A directory service object was modified.</description>
+    </rule>
+    <rule id="101001" level="2">
+      <if_sid>18104</if_sid>
+      <id>^5137$</id>
+      <description>A directory service object was created.</description>
+    </rule>
+    <rule id="101002" level="2">
+      <if_sid>18104</if_sid>
+      <id>^5138$</id>
+      <description>A directory service object was undeleted.</description>
+    </rule>
+    <rule id="101003" level="5">
+      <if_sid>18104</if_sid>
+      <id>^5139$</id>
+      <description>A directory service object was moved.</description>
+    </rule>
+    <rule id="101004" level="5">
+      <if_sid>18104</if_sid>
+      <id>^5141$</id>
+      <description>A directory service object was deleted.</description>
+    </rule>
+  </group>

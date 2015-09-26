@@ -1,0 +1,6 @@
+alienvault-openvas8-feed (1.0) stable; urgency=low
+
+  * Initial Release.
+
+ -- AlienVault package developers <debian-devel@alienvault.com>  Mon, 25 May 2015 15:20:00 +0100
+

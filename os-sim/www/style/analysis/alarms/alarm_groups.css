@@ -1,0 +1,455 @@
+<?php
+if (!headers_sent()) 
+{
+    header("Content-type: text/css");
+}
+?>
+/**
+*
+* License:
+*
+* Copyright (c) 2003-2006 ossim.net
+* Copyright (c) 2007-2013 AlienVault
+* All rights reserved.
+*
+* This package is free software; you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation; version 2 dated June, 1991.
+* You may not use, modify or distribute this program under any other version
+* of the GNU General Public License.
+*
+* This package is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU General Public License for more details.
+*
+* You should have received a copy of the GNU General Public License
+* along with this package; if not, write to the Free Software
+* Foundation, Inc., 51 Franklin St, Fifth Floor, Boston,
+* MA  02110-1301  USA
+*
+*
+* On Debian GNU/Linux systems, the complete text of the GNU General
+* Public License can be found in `/usr/share/common-licenses/GPL-2'.
+*
+* Otherwise you can read it here: http://www.gnu.org/licenses/gpl-2.0.txt
+*
+*/
+
+
+
+.img_toggle
+{
+    cursor: pointer;
+}
+
+.otx_icon
+{
+    height: 22px;
+}
+
+.gname, .aname
+{
+    white-space: nowrap;
+}
+
+tr.g_alarm_list:hover > td, tr.a_event_list:hover > td 
+{
+    background: none !important;
+    background-color: none !important;
+}
+
+tr.g_alarm_list > td, tr.a_event_list > td
+{
+    background: none !important;
+    background-color: none !important;
+    padding: 0 !important;
+}
+
+.save_disabled
+{
+    cursor: default;
+    opacity: 0.3;
+}
+
+.save_descr, .loading_action
+{
+    height: 16px;
+}
+
+#bg_container
+{
+    display: none;
+    position:absolute;
+    top:0;
+    bottom:0;
+    top:0;
+    right:0;
+    width:100%;
+    height:100%;
+}
+
+#alarm_list_template
+{
+    display: none;
+}
+
+.g_alarm_list .dt_header
+{
+    display: none;
+}
+
+/*  Alarm Filters  */
+
+.filters
+{
+    margin-top: 20px;
+}
+
+#alarm_group_params
+{
+    position: relative;
+    clear: both;
+    margin: 5px 15px 25px 15px;
+    display: none;
+    clear: both;
+}
+
+
+#alarm_group_params .p_column
+{
+    width: 33.33%;
+    position: relative;
+    margin: 0;
+    padding: 0;
+    float: left;
+
+}
+
+#alarm_group_params label
+{
+    display: block;
+    margin: 7px 0 3px 0;
+}
+
+#alarm_group_params label.line
+{
+    display: inline-block;
+}
+
+#alarm_group_params input[type="search"], #alarm_group_params input[type="text"]
+{
+    width: 80%;
+    -webkit-appearance: none;
+    border: none;
+    background: rgba(150, 150, 150, 0.1);
+    padding: 5px;
+}
+
+#alarm_group_params select
+{
+    width: 80%;
+}
+
+
+#alarm_group_params .datepicker_range
+{
+    float: left;
+    width: 90%;
+    margin: 0;
+}
+
+
+.calendar_from 
+{
+    margin-left: 18px;
+	width: 30%;
+}
+.calendar_to
+{
+	width: 30%;
+}
+
+.calendar_separator
+{
+    width: 18%;
+}
+
+.datepicker_range input
+{
+    width: 100% !important;
+}
+
+#num_events
+{
+    width: 64% !important;
+    margin: 0 !important;
+}
+
+#num_events_op
+{
+    width: 15% !important;
+    margin: 0 !important;
+}
+
+
+#ag_notif
+{
+    position: absolute;
+    left:0;
+    right: 0;
+    top: 10px;
+    text-align:center; 
+}
+
+#header_rga
+{
+	position: absolute;
+	width: 400px;
+	top: 0px;
+	right: 0px !important;
+	text-align: right;
+	z-index: 100;
+}
+
+.dataTables_wrapper .ui-toolbar
+{
+    padding-bottom: 6px !important;
+}
+
+#body_ga
+{
+	position: relative;
+	margin-top: 20px;
+}
+
+#body_ga #t_grouped_alarms
+{
+	border-collapse: collapse;
+	background: transparent;
+	border: none;
+	width: 100%;
+
+}
+
+#t_grouped_alarms #th_chk_all
+{
+    width: 20px;
+}
+
+#t_grouped_alarms #th_exp_all
+{
+    width: 20px;
+}
+
+#t_grouped_alarms #th_status
+{
+    width: 50px;
+}
+
+#t_grouped_alarms #th_actions
+{
+    width: 80px;
+}
+
+#t_grouped_alarms #no_groups
+{
+    height: 100px;
+    font-style: italic;
+    font-size: 13px;
+}
+
+#t_grouped_alarms tfoot
+{
+    border-top: solid 1px #CCCCCC;
+}
+
+#t_grouped_alarms tfoot td
+{
+    background: none;
+    padding:5px;
+    padding-top:0px;
+}
+
+#t_grouped_alarms tbody .sep_date
+{
+    text-align:center;
+    padding:5px;
+    background-color:#DEEBDB;
+    font-weight: bold;
+}
+
+#t_grouped_alarms .tr_take > td
+{
+	background: rgba(51, 153, 204, 0.25) !important;
+}
+
+#t_risk
+{
+	width: 30px;
+	margin: auto;
+	text-align: center;
+	background: transparent;
+	border: none;
+}
+
+#footer_ga
+{
+	height: 30px;
+	line-height: 30px;
+	text-align: right;
+	margin-right: 3px;
+	padding-top: 15px;
+}
+
+.t_agr
+{
+	border: none;
+	border-collapse: collapse;
+	width: 100%;
+}
+
+.t_agr .table_list td
+{
+    background: transparent !important;
+}
+
+.t_agr .no_alarms
+{
+    height: 50px;
+    font-style: italic;
+    font-size: 12px;
+}
+
+.t_white
+{
+	background: transparent;
+	border: none;
+}
+
+.t_white td
+{
+	color: white !important;
+	text-align: left;
+}
+
+.ajaxgreen
+{
+    border: none;
+    border-collapse: collapse;
+    margin: 10px auto;
+    width: 98%;
+}
+
+.ajaxgreen th
+{
+    font-family: "MuliRegular","Lucida Sans","Lucida Grande",Lucida,sans-serif,Verdana;
+    font-size: 12px;
+}
+
+.ajaxgreen #c_th_correlation a, .ajaxgreen #c_th_correlation a:hover
+{
+    text-decoration: none;
+}
+
+.ajaxgreen #sort_asc
+{
+    position: relative;
+    left: 0px;
+    top: 1px;
+}
+
+.ajaxgreen #sort_desc
+{
+    position: relative;
+    right: 0px;
+    top: -7px;
+}
+
+.disabled img 
+{
+    filter:alpha(opacity=50);
+    -moz-opacity:0.5;
+    -khtml-opacity: 0.5;
+    opacity: 0.5;
+}
+
+.hidden_row /* To respect the odd/even style */
+{
+    display: none;
+}
+
+.noheight_row
+{
+    padding: 0px !important;
+    height:  0px !important;
+    background: white !important;
+}
+
+.noheight_row:hover
+{
+    background: white !important;
+}
+
+.no_hover, .no_hover:hover
+{
+    background: transparent !important;
+}
+
+#header_ga, #header_ga table
+{
+    background: transparent;
+    margin-left: 0px;
+}
+
+#header_rga
+{
+    right: 0px;
+}
+
+.td_header
+{
+    font-size: 12px;
+    font-family: "MuliRegular","Lucida Sans","Lucida Grande",Lucida,sans-serif,Verdana;
+    color:#949494;
+    text-transform: uppercase;   
+}
+
+.table_list td
+{
+    height: inherit;
+}
+
+span.risk_circle
+{
+    border-radius:100%;
+    display: block;
+    margin: 0 auto;
+    text-align: center;
+    width: 24px;
+    height: 24px;
+    line-height: 24px;    
+}
+
+span.red
+{ 
+    background-color:#FA0000;
+    color: white;
+}
+
+span.green
+{
+    background-color:#94CF05;
+    color: white;
+}
+
+span.orange
+{
+    background-color:#FF8A00;
+	color: white;
+}
+
+span.black
+{
+
+}

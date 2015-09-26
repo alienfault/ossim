@@ -1,0 +1,4 @@
+*.tgz
+*.tar.gz
+*.py[co]
+*.runrun

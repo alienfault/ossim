@@ -1,0 +1,16 @@
+Source: alienvault-openvas8-feed
+Section: net
+Priority: extra
+Maintainer: AlienVault package developers <debian-devel@alienvault.com>
+Build-Depends: debhelper (>= 7)
+Standards-Version: 3.7.3
+Homepage: http://www.openvas.org/
+
+Package: alienvault-openvas8-feed
+Architecture: all
+Pre-Depends: alienvault-openvas (>= 5.1.0), ossim-utils, monit, sqlite3
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Replaces: ossim-mysql, alienvault-openvas-feed
+Conflicts: alienvault-openvas-feed
+Description: AlienVault OpenVAS feed
+ OpenVAS feed updated from http://www.openvas.org/

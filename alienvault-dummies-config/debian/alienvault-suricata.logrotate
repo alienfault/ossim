@@ -1,0 +1,8 @@
+/var/log/suricata/eve.json {
+    daily
+    rotate 5
+    compress
+    missingok
+    notifempty
+    copytruncate
+}

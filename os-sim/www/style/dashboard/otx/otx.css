@@ -1,0 +1,402 @@
+<?php
+if (!headers_sent()) 
+{
+    header("Content-type: text/css");
+}
+?>
+/**
+*
+* License:
+*
+* Copyright (c) 2003-2006 ossim.net
+* Copyright (c) 2007-2013 AlienVault
+* All rights reserved.
+*
+* This package is free software; you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation; version 2 dated June, 1991.
+* You may not use, modify or distribute this program under any other version
+* of the GNU General Public License.
+*
+* This package is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU General Public License for more details.
+*
+* You should have received a copy of the GNU General Public License
+* along with this package; if not, write to the Free Software
+* Foundation, Inc., 51 Franklin St, Fifth Floor, Boston,
+* MA  02110-1301  USA
+*
+*
+* On Debian GNU/Linux systems, the complete text of the GNU General
+* Public License can be found in `/usr/share/common-licenses/GPL-2'.
+*
+* Otherwise you can read it here: http://www.gnu.org/licenses/gpl-2.0.txt
+*
+*/
+
+
+#otx_dashboard_wrapper
+{
+    margin: 15px auto;
+    position: relative;
+}
+
+#otx_notif
+{
+    position: absolute;
+    top: 10px;
+    right: 0;
+    left: 0;
+    width: 100%;
+    z-index: 100;
+}
+
+.header_title
+{
+    clear: both;
+    padding:14px;
+    background-color: #F2F2F2;
+    border: 1px solid rgb(204, 204, 204);
+    font-weight: bold;
+    text-align: left;
+}
+
+.data_body
+{
+    position: relative;
+    margin-bottom: 50px;
+    border: 1px solid rgb(204, 204, 204);
+    border-top: none;
+    min-height: 50px;
+}
+
+.otx_dashboard_sec_loading
+{
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    right: 0px;
+    bottom: 0px;
+    height: 100%;
+    width: 100%;
+    background: #F2F2F2;
+}
+
+.otx_dashboard_sec_loading div
+{
+    position: absolute;
+    top: 50%;
+    margin-top: -7px;
+    width: 100%;
+    text-align: center;
+}
+
+.otx_dashboard_sec_loading img
+{
+    height: 16px;
+}
+
+
+.p_sec_msg
+{
+    line-height: 50px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+.p_not_connected_button
+{
+    display: block;
+    margin: -5px auto 20px auto;
+    line-height: auto;
+}
+
+
+.p_chart.chart_disabled
+{
+    pointer-events: none;
+    opacity: 0.4;
+}
+
+.p_chart.chart_disabled:before
+{
+    content: ' ';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    height: 100%;
+    background: transparent;
+    z-index: 9999;
+}
+
+#pulse_summary.chart_disabled
+{
+    border-color: rgba(204, 204, 204, 0.4);
+}
+/*****************          Pulse Summary          *****************/
+
+.pulse_summary_col
+{
+    float:left;
+    width: 20%;
+    box-sizing: border-box;
+    text-align: center;
+}
+
+.data_body .pulse_summary_col
+{
+    line-height: 50px;
+    height: 50px;
+}
+
+.p_link
+{
+    cursor: pointer;
+}
+
+
+/*****************          Pulse Top          *****************/
+
+#chart_top
+{
+    margin: 0 auto;
+    position: relative;
+    overflow: auto;
+}
+
+
+/*  Common Chart Styles */
+
+.g_top_header, .g_body
+{
+    width: 100%;
+    clear: both;
+}
+
+.g_cell
+{
+    height: 35px;
+    line-height: 35px;
+}
+
+.g_left
+{
+    width: 30%;
+    float: left;
+}
+
+.g_right
+{
+    width: 70%;
+    float: left;
+}
+
+/*  header Chart Styles */
+
+.g_top_header
+{
+    border-bottom: 1px solid lightgray;    
+}
+
+.g_header_elems
+{
+    white-space: nowrap;
+}
+
+.g_header_item
+{
+    display: inline-block;
+    text-align: center;
+    cursor: pointer;
+}
+
+/*  Body Chart Styles */
+.g_body
+{
+    position: relative;
+    max-height: 450px;
+    overflow: auto;
+}
+
+.g_body_legend
+{
+    box-sizing: border-box;
+    padding: 0 10px;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    cursor: pointer;
+}
+
+.g_body_elems
+{
+	white-space: nowrap;
+}
+
+.g_row
+{
+    width: 100%;
+    clear: both;
+}
+
+.g_bubble
+{
+    display: inline-block;
+}
+
+.g_bubble .bubble
+{
+    cursor: pointer;
+}
+
+.bubble
+{
+    background: #04b6d2 !important;
+    background: -moz-linear-gradient(top,  #04b6d2 0%, #03869a 100%) !important;
+    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#04b6d2), color-stop(100%,#03869a)) !important;
+    background: -webkit-linear-gradient(top,  #04b6d2 0%,#03869a 100%) !important;
+    background: -o-linear-gradient(top,  #04b6d2 0%,#03869a 100%) !important;
+    background: -ms-linear-gradient(top,  #04b6d2 0%,#03869a 100%) !important;
+    background: linear-gradient(to bottom,  #04b6d2 0%,#03869a 100%) !important;
+}
+
+.bubble:hover 
+{ 
+    opacity: 0.6 !important;
+}
+
+.g_row:nth-child(odd) .g_cell
+{
+    background: rgb(236, 236, 236);
+}
+
+.g_row:nth-child(even) .g_cell
+{
+    background: rgba(0, 0, 0, 0);
+}
+
+
+/*****************          Pulse Trend          *****************/
+
+#chart_trend_wrap
+{
+    position: relative;
+    padding: 15px;
+    box-sizing: border-box;
+}
+
+/*****************          IP Reputation          *****************/
+
+#ipr_options
+{
+    float: right;
+    font-weight: normal;
+    margin-top: -3px;
+    display: none;
+}
+
+
+/***  IP Reputation Map  ***/
+
+#ipr_map
+{
+    width:100%;
+    height:400px;
+    clear:left;
+    text-align:center;
+}
+
+
+/***  IP Reputation Summary  ***/
+
+#ipr_summary
+{
+    margin-top: 15px;
+    border-top: 1px solid lightgray;
+    box-sizing: border-box;
+}
+#ipr_summary .column
+{
+    float: left;
+    box-sizing: border-box;
+    min-height: 290px;
+}
+
+#ipr_summary .column_side
+{
+    width: 30%;
+}
+
+#ipr_summary .column_center
+{
+    width: 40%;
+    border-right: 2px solid lightgray;
+    border-left: 2px solid lightgray;
+}
+
+.s_header
+{
+    text-align: center;
+    font-weight: bold;
+    line-height: 40px;
+    background: white;
+}
+
+/***  Top Countries  ***/
+
+#r_top img
+{
+    height: 12px;
+    padding-right: 5px;
+}
+
+
+/***  Chart Activities   ***/
+
+#r_chart
+{
+    height:250px;
+}
+
+.r_chart_empty
+{
+    line-height: 250px;
+    text-align: center;
+    font-style: italic;
+}
+
+#r_chart .jqplot-point-label 
+{
+  border: 1.5px solid #aaaaaa;
+  padding: 1px 3px;
+  background-color: #eeccdd;
+}
+
+.jqplot-data-label 
+{
+	font-size: 12px;
+}
+
+.jqplot-legend-title  
+{
+	text-align: left !important;
+}
+
+.jqplot-title, canvas.jqplot-pieRenderer-highlight-canvas
+{
+	background-color: rgba(255, 255, 255, 0) !important;
+}
+
+.jqplot-grid-canvas
+{
+	background-color: rgba(200,200,200,0.1);
+}
+
+td.left
+{
+    padding-left: 15px !important;
+}

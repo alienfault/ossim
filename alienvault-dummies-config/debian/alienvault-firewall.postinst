@@ -1,0 +1,147 @@
+#!/bin/sh
+# postinst script for alienvault-firewall
+#
+# see: dh_installdeb(1)
+
+set -e
+
+# summary of how this script can be called:
+#        * <postinst> `configure' <most-recently-configured-version>
+#        * <old-postinst> `abort-upgrade' <new version>
+#        * <conflictor's-postinst> `abort-remove' `in-favour' <package>
+#          <new-version>
+#        * <postinst> `abort-remove'
+#        * <deconfigured's-postinst> `abort-deconfigure' `in-favour'
+#          <failed-install-package> <version> `removing'
+#          <conflicting-package> <version>
+# for details, see http://www.debian.org/doc/debian-policy/ or
+# the debian-policy package
+CUSTOM_FIREWALL_RULES="/etc/ossim/firewall_include"
+TMP_FIREWALL_CUSTOM_RULES="/tmp/av_include_iptables.tmp"
+TMP_TEST_RULES_RESULT="/tmp/ofv.tmp"
+VALID_FIREWALL_CUSTOM_RULES="/etc/iptables/rules012-custom.iptables"
+DEPRECATED_FIREWALL_RULES="/etc/ossim_firewall"
+DEPRECATED_FIREWALL_IP6_RULES="/etc/ossim_firewall_ipv6"
+
+LAST_INPUT_RULE="-A INPUT -j REJECT --reject-with icmp-host-prohibited"
+LAST_FORWARD_RULE="-A FORWARD -j REJECT --reject-with icmp-host-prohibited"
+ 
+configure_firewall(){
+    # Prepares the custom rules added by the user in the firewall_include file
+    # to make them be applied in the firewall configuration file
+      
+    if [ -f $CUSTOM_FIREWALL_RULES ]; then
+        length=$(sed -e "s/^#.*$//g" "$CUSTOM_FIREWALL_RULES")
+        if [ ! -z "$length" ]; then
+            cat $(ls /etc/iptables/*.iptables | grep -v ip6) | grep -v COMMIT > $TMP_FIREWALL_CUSTOM_RULES
+            cat "$CUSTOM_FIREWALL_RULES" | grep -v "^#" >> $TMP_FIREWALL_CUSTOM_RULES || true
+            echo "COMMIT" >> $TMP_FIREWALL_CUSTOM_RULES
+
+            /sbin/iptables-restore --test $TMP_FIREWALL_CUSTOM_RULES && echo "yes" > $TMP_TEST_RULES_RESULT || true
+
+            if [ -f $TMP_TEST_RULES_RESULT ]; then
+                echo "Custom firewall rules tested successfully"
+                cat "$CUSTOM_FIREWALL_RULES" | grep -v "^#" > $VALID_FIREWALL_CUSTOM_RULES || true
+                echo "$LAST_INPUT_RULE" >> "$VALID_FIREWALL_CUSTOM_RULES"
+                echo "$LAST_FORWARD_RULE" >> "$VALID_FIREWALL_CUSTOM_RULES"
+                rm -rf $TMP_FIREWALL_CUSTOM_RULES
+                rm -rf $TMP_TEST_RULES_RESULT
+            else
+                echo "Custom firewall rules test failed. Custom rules will be ignored"
+                # There is no need to append "COMMIT", since it is included in zzzzz-footer.iptables
+                echo "$LAST_INPUT_RULE" > "$VALID_FIREWALL_CUSTOM_RULES"
+                echo "$LAST_FORWARD_RULE" >> "$VALID_FIREWALL_CUSTOM_RULES"
+            fi
+        else
+            echo "$LAST_INPUT_RULE" > "$VALID_FIREWALL_CUSTOM_RULES"
+            echo "$LAST_FORWARD_RULE" >> "$VALID_FIREWALL_CUSTOM_RULES"
+        fi
+    else
+        echo "$LAST_INPUT_RULE" > "$VALID_FIREWALL_CUSTOM_RULES"
+        echo "$LAST_FORWARD_RULE" >> "$VALID_FIREWALL_CUSTOM_RULES"
+    fi
+
+    /etc/network/if-pre-up.d/iptables > /dev/null 2>&1 || true
+}
+
+configure_default_custom_firewall () {
+    if [ -f /usr/share/alienvault-firewall/firewall_include ]; then
+       if ! [ -f /etc/ossim/firewall_include ]; then
+           cp -af /usr/share/alienvault-firewall/firewall_include /etc/ossim/
+       fi
+    fi
+}
+
+delete_deprecated_firewall_configuration(){
+    # Removes the deprecated firewall configuration from the system
+
+    # 1. Removing files
+    if [ -f $DEPRECATED_FIREWALL_RULES ]; then
+        rm -f $DEPRECATED_FIREWALL_RULES
+    fi
+
+    if [ -f $DEPRECATED_FIREWALL_IP6_RULES ]; then
+        rm -f $DEPRECATED_FIREWALL_IP6_RULES
+    fi
+
+    # 2. Removing deprecated startup scripts from the different runlevels 
+    update-rc.d -f ossim-firewall remove
+
+
+}
+
+
+case "$1" in
+    configure)
+        # Enabling iptables filter module (first time)
+        if [ -z "$(modprobe -l iptable_filter)" ]; then
+            modprobe -q iptable_filter || true
+            echo "Module iptable_filter was disabled, and it has been enabled"
+        fi
+
+        if [ -z "$(modprobe -l ip6table_filter)" ]; then
+            modprobe -q ip6table_filter || true
+            echo "Module iptable_filter was disabled, and it has been enabled"
+        fi
+
+        configure_default_custom_firewall
+
+        # Deleting deprecated ossim_firewall configuration
+        delete_deprecated_firewall_configuration
+        
+        # Configuring firewall
+        configure_firewall || true
+    ;;
+
+    triggered)
+        for trigger in $2
+        do
+            case "$trigger" in
+                alienvault-restart-firewall)
+                    # Configuring firewall
+                    configure_firewall || true
+                ;;
+
+                *)
+                    echo "postinst called with unknown trigger \`$2'">&2
+                    exit 1
+                ;;
+            esac
+        done
+    ;;
+
+    abort-upgrade|abort-remove|abort-deconfigure)
+    ;;
+
+    *)
+        echo "postinst called with unknown argument \`$1'" >&2
+        exit 1
+    ;;
+esac
+
+# dh_installdeb will replace this with shell code automatically
+# generated by other debhelper scripts.
+
+#DEBHELPER#
+
+exit 0

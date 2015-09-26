@@ -1,0 +1,169 @@
+#!/bin/bash
+# postinst script for alienvault-ossec
+#
+# see: dh_installdeb(1)
+
+set -e
+
+# summary of how this script can be called:
+#        * <postinst> `configure' <most-recently-configured-version>
+#        * <old-postinst> `abort-upgrade' <new version>
+#        * <conflictor's-postinst> `abort-remove' `in-favour' <package>
+#          <new-version>
+#        * <postinst> `abort-remove'
+#        * <deconfigured's-postinst> `abort-deconfigure' `in-favour'
+#          <failed-install-package> <version> `removing'
+#          <conflicting-package> <version>
+# for details, see http://www.debian.org/doc/debian-policy/ or
+# the debian-policy package
+
+configure_ossec_tzone() {
+    if ! cmp -s /etc/localtime /var/ossec/etc/localtime
+    then
+        cp -f /etc/localtime /var/ossec/etc/localtime
+        dpkg-trigger --no-await alienvault-ossec-restart
+    fi
+}
+
+remove_old_ossec_files() {
+    if [ -f /etc/logrotate.d/ossec ];
+    then
+        rm -f /etc/logrotate.d/ossec
+    fi
+
+}
+
+case "$1" in
+    configure)
+        OSSEC_CONF="/var/ossec/etc/ossec.conf"
+        OSSEC_DECODERS_FILE="/var/ossec/etc/decoder.xml"
+        OSSIM_SETUP_CONF="/etc/ossim/ossim_setup.conf"
+        OSSEC_RULES_FILE="/var/ossec/rules/ossec_rules.xml"
+        SYSLOG_RULES_FILE="/var/ossec/rules/syslog_rules.xml"
+        AV_DS_RULES_FILE="/var/ossec/rules/alienvault-directory-service_rules.xml"
+	MSAUTH_RULES_FILE="/var/ossec/rules/msauth_rules.xml"
+
+        configure_ossec_tzone
+        remove_old_ossec_files
+
+        # Update process value for ossim-agent watchdog into its ossec plugin config
+        if [ -x "/usr/share/ossim/scripts/ossec_set_plugin_config.sh" ]; then
+            /usr/share/ossim/scripts/ossec_set_plugin_config.sh
+        fi
+
+        MD5_PRE=`md5sum $OSSEC_CONF|awk '{print $1}'`
+        if [ -d "/var/ossec/.ssh" ]; then
+            chown ossec:ossec /var/ossec/.ssh
+            chmod 700  /var/ossec/.ssh
+            if [ -f "/var/ossec/.ssh/config" ]; then
+                chown ossec:ossec /var/ossec/.ssh/config
+                chmod 600 /var/ossec/.ssh/config
+            fi
+        fi
+
+        if [ -f "$OSSEC_CONF" ]; then
+            # Common configuration for Ossec
+            CUSTOM_ALERT='<custom_alert_output>AV - Alert - "$TIMESTAMP" --> RID: "$RULEID"; RL: "$RULELEVEL"; RG: "$RULEGROUP"; RC: "$RULECOMMENT"; USER: "$DSTUSER"; SRCIP: "$SRCIP"; HOSTNAME: "$HOSTNAME"; LOCATION: "$LOCATION"; EVENT: "[INIT]$FULLLOG[END]"; </custom_alert_output>'
+            CUSTOM_ALERT=$(printf "%q" "$CUSTOM_ALERT")
+
+            sed -i "$OSSEC_CONF" \
+                -e "/<custom_alert_output>.*<\/custom_alert_output>/d" \
+                -e "s#</global>#  $CUSTOM_ALERT\n  </global>#" \
+                -e '/<local_ip>.*<\/local_ip>/d' \
+                -e "/<include>ms_dhcp_rules.xml<\/include>/d" \
+                -e "s#</rules>#  <include>ms_dhcp_rules.xml<\/include>\n  </rules>#" \
+                -e "/<include>alienvault-directory-service_rules.xml<\/include>/d" \
+                -e "s#</rules>#  <include>alienvault-directory-service_rules.xml<\/include>\n  </rules>#" \
+
+            # Decoder changes. We need to deal with the user changes, so we only replace the dhcp line decoder.
+            # Do not overwrite the files. 
+            # If the ossec.conf file doesn't exist,it not makes sense to do the below replacement. So we make it within this code-block
+            sed -i "$OSSEC_DECODERS_FILE" \
+                -e "/<decoder name=\"ms-dhcp-ipv4\">/,/<\/decoder>/{ s/<regex>.*/<regex>^(\\\d\\\d),\\\d+\/\\\d+\/\\\d\\\d\\\d\*,\\\d+:\\\d+:\\\d+,(\\\.+),(\\\d+.\\\d+.\\\d+.\\\d+)<\/regex>/g;}"
+
+            # HA configuration
+            if [ -f "$OSSIM_SETUP_CONF" ]; then
+                HA_HEARTBEAT_START=$(awk -F '=' '/\<ha_heartbeat_start\>/ {print $2}' "$OSSIM_SETUP_CONF")
+                if [ "$HA_HEARTBEAT_START" = "yes" ]; then
+                    HA_VIRTUAL_IP=$(awk -F '=' '/\<ha_virtual_ip\>/ {print $2}' "$OSSIM_SETUP_CONF")
+                    sed -i "$OSSEC_CONF" \
+                        -e "s:</remote>:  <local_ip>$HA_VIRTUAL_IP</local_ip>\\n  </remote>:"
+                fi
+            fi
+
+            # Alert if new files are created. Add line only if it's not present
+            alert="<alert_new_files>yes</alert_new_files>"
+            test=`grep "$alert" $OSSEC_CONF 2>/dev/null || echo "no"`
+            if [ "$test" = "no" ]; then
+                sed -i "$OSSEC_CONF" \
+                    -e "s#<syscheck>#&\n    <alert_new_files>yes</alert_new_files>#"
+            fi
+        fi
+
+	# Msauth changes
+        if [ -f "$MSAUTH_RULES_FILE" ]; then
+                sed -i "$MSAUTH_RULES_FILE" \
+                        -e "s/<id>\^539$|\^4625$<\/id>/<id>\^539$<\/id>/" \
+                        -e "s/<id>\^529$<\/id>/<id>\^529$\|\^4625$<\/id>/"
+        fi
+
+        # Change alert level for new files
+        if [ -f "$OSSEC_RULES_FILE" ]; then
+            sed -i "$OSSEC_RULES_FILE" \
+                -e 's/<rule id="554" level="0">/<rule id="554" level="7">/' 
+        fi
+
+        # Fix syslog restart rule
+        if [ -f "$SYSLOG_RULES_FILE" ]; then
+            sed -i "$SYSLOG_RULES_FILE" \
+                -e 's/<match>\^exiting on signal/<match>exiting on signal/' 
+        fi
+
+        if [ -f "$AV_DS_RULES_FILE" ]; then
+            chmod 554 $AV_DS_RULES_FILE
+            chown root:ossec $AV_DS_RULES_FILE
+        fi
+
+        MD5_POS=`md5sum $OSSEC_CONF|awk '{print $1}'`
+
+        if [ "$MD5_PRE" != "$MD5_POS" ]; then
+           dpkg-trigger --no-await alienvault-ossec-restart
+        fi
+
+        dpkg-trigger --no-await alienvault-restart-firewall
+    ;;
+
+    triggered)
+        for trigger in $2
+        do
+            case "$trigger" in
+                alienvault-ossec-restart)
+                    /etc/init.d/ossec restart || true
+                    update-rc.d ossec defaults
+                ;;
+                alienvault-config-sensor-tzone)
+                    configure_ossec_tzone
+                ;;
+                *)
+                    echo "postinst called with unknown trigger \`$2'">&2
+                    exit 1
+                ;;
+            esac
+        done
+    ;;
+
+    abort-upgrade|abort-remove|abort-deconfigure)
+    ;;
+
+    *)
+        echo "postinst called with unknown argument \`$1'" >&2
+        exit 1
+    ;;
+esac
+
+# dh_installdeb will replace this with shell code automatically
+# generated by other debhelper scripts.
+
+#DEBHELPER#
+
+exit 0

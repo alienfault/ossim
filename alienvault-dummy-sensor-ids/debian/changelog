@@ -1,0 +1,41 @@
+alienvault-dummy-sensor-ids (5.1.1-0) stable; urgency=low
+
+  * New release
+
+ -- AlienVault ENG Team <debian-devel@alienvault.com>  Wed, 29 Jul 2015 07:21:36 -0400
+
+alienvault-dummy-sensor-ids (5.1.0-0) stable; urgency=low
+
+  * New release
+
+ -- AlienVault ENG Team <debian-devel@alienvault.com>  Mon, 29 Jun 2015 11:29:21 -0400
+
+alienvault-dummy-sensor-ids (5.1-0) unstable; urgency=low
+
+  * New release
+
+ -- AlienVault ENG Team <debian-devel@alienvault.com>  Thu, 26 Mar 2015 08:54:37 -0400
+
+alienvault-dummy-sensor-ids (5.0-0) unstable; urgency=low
+
+  * New release
+
+ -- OSSIM Integration Team <ossim@ossim.net>  Mon, 26 Jan 2015 05:19:41 -0500
+
+alienvault-dummy-sensor-ids (4.16-0) unstable; urgency=low
+
+  * New release
+
+ -- OSSIM Integration Team <ossim@ossim.net>  Wed, 19 Nov 2014 06:41:50 -0500
+
+alienvault-dummy-sensor-ids (4.14-0) unstable; urgency=low
+
+  * New release
+
+ -- OSSIM Integration Team <ossim@ossim.net>  Fri, 24 Oct 2014 13:35:31 -0400
+
+alienvault-dummy-sensor-ids (4.13.0) stable; urgency=low
+
+  * New release
+
+ -- AlienVault package developers <debian-devel@alienvault.com>  Thu, 16 Oct 2014 13:20:43 +0100

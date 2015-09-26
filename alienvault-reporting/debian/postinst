@@ -1,0 +1,28 @@
+#!/bin/sh
+
+configure_reporting_feed() {
+
+    sql="/usr/share/alienvault/reporting/reporting-feed.sql"
+
+    if [ -f "${sql}" ]; then
+        echo "Loading report data in DB..."
+        cat /usr/share/alienvault/reporting/reporting-feed.sql | ossim-db || true
+    else
+        echo "'${sql}' does not exist. Package might be corrupt"
+    fi
+}
+
+case "$1" in
+    configure)
+        configure_reporting_feed
+    ;;
+
+    abort-upgrade|abort-remove|abort-deconfigure)
+    ;;
+
+    *)
+        echo "postinst called with unknown argument \`$1'" >&2
+        exit 1
+    ;;
+
+esac

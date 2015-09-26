@@ -1,0 +1,14 @@
+etc/ossim/framework/
+etc/ossim/framework/panel/configs
+var/lib/ossim/backup/
+var/lib/ossim/rrd/
+usr/share/ossim/
+usr/share/ossim/scripts/alarms
+usr/share/ossim/scripts/forensics
+usr/share/ossim/www/tmp/
+usr/bin/
+etc/cron.d/
+etc/cron.daily/
+usr/lib/cgi-bin/
+var/log/ossim/
+etc/logrotate.d/

@@ -1,0 +1,55 @@
+#!/bin/bash
+# ossim-mysql.postinst
+
+
+case "$1" in
+	configure)
+
+	if [ ! -f "/etc/ossim/ossim_setup.conf" ]; then
+	      echo "ossim_Setup.conf not found, skip configuration."
+	        exit 0;
+	    fi
+
+	prof=`cat /etc/ossim/ossim_setup.conf  | grep -v "profile=server" | grep profile | cut -d= -f2`
+	profiles="$(echo $prof | tr ',' ' ')"
+	SERVER="0"; DATABASE="0"; FRAMEWORK="0"; SENSOR="0"
+	for p in $profiles ; do
+		if [ "$p" = "Server" ]; then SERVER="1"
+		elif [ "$p" = "Database" ]; then DATABASE="1"
+		elif [ "$p" = "Framework" ]; then FRAMEWORK="1"
+		elif [ "$p" = "Sensor" ]; then	SENSOR="1"
+		else
+			echo -e "No profiles found."
+		fi
+	done
+
+## run original update scripts:
+
+# suricata update:
+	srdpi="/var/lib/dpkg/info/suricata-rules-default.postinst"
+	if [ -f "$srdpi" ]; then
+		echo " suricata plugin additional update:"
+		/bin/bash "$srdpi" configure
+	fi
+
+# taxonomy update (includes repriorize):
+	otpi="/var/lib/dpkg/info/ossim-taxonomy.postinst"
+	if [ -f "$otpi" ]; then
+		echo "Taxonomy update:"
+		/bin/bash "$otpi" configure
+	fi
+
+        echo "done."
+	;;
+
+    abort-upgrade|abort-remove|abort-deconfigure)
+    ;;
+
+    *)
+	echo "postinst called with unknown argument \$1'" >&2
+	exit 1
+    ;;
+esac
+
+
+exit 0

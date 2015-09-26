@@ -1,0 +1,23 @@
+Source: alienvault-rhythm
+Section: net
+Priority: optional
+Maintainer: AlienVault package developers <debian-devel@alienvault.com>
+Origin: AlienVault
+Build-Depends: debhelper (>= 7.0.50), pkg-config, automake,
+ libglib2.0-dev, libjson-glib-dev, libhiredis-dev
+Standards-Version: 3.8.0
+Homepage: http://www.alienvault.com/
+
+Package: alienvault-rhythm
+Architecture: amd64
+Section: net
+Depends: lsb-base, suricata,
+ alienvault-redis-server-otx, libglib2.0-0, libjson-glib-1.0-0, libhiredis0.10,
+Description: AlienVault Rhythm is an event correlator for Suricata.
+
+Package: alienvault-rhythm-dbg
+Architecture: amd64
+Section: debug
+Depends: alienvault-rhythm (= ${binary:Version}),
+ libglib2.0-0-dbg, libjson-glib-1.0-0-dbg, libhiredis-dbg
+Description: debugging symbols for AlienVault Rhythm

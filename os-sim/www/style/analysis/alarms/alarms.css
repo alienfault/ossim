@@ -1,0 +1,237 @@
+<?php
+if (!headers_sent()) 
+{
+    header("Content-type: text/css");
+}
+?>
+/**
+*
+* License:
+*
+* Copyright (c) 2003-2006 ossim.net
+* Copyright (c) 2007-2013 AlienVault
+* All rights reserved.
+*
+* This package is free software; you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation; version 2 dated June, 1991.
+* You may not use, modify or distribute this program under any other version
+* of the GNU General Public License.
+*
+* This package is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU General Public License for more details.
+*
+* You should have received a copy of the GNU General Public License
+* along with this package; if not, write to the Free Software
+* Foundation, Inc., 51 Franklin St, Fifth Floor, Boston,
+* MA  02110-1301  USA
+*
+*
+* On Debian GNU/Linux systems, the complete text of the GNU General
+* Public License can be found in `/usr/share/common-licenses/GPL-2'.
+*
+* Otherwise you can read it here: http://www.gnu.org/licenses/gpl-2.0.txt
+*
+*/
+
+/* Directive event row */
+
+.td_directive_event td
+{
+    background-color: #DEEBDB !important;
+}
+
+
+/* Pagination */
+
+.dt_footer 
+{		
+	font-family: "MuliRegular","Lucida Sans","Lucida Grande",Lucida,sans-serif,Verdana !important;
+	font-size: 12px;	
+	color: #949494;
+	margin: auto;
+	clear: both;
+	overflow: hidden;
+	padding: 4px 1px;
+	border-top: solid 1px #CCCCCC;
+}
+
+
+.dt_footer .t_entries
+{    
+    float: left;    
+    padding: 2px 0px 9px 5px;
+    text-transform: uppercase;
+    white-space: nowrap;
+    width: 300px;
+    text-align: left;
+}
+
+.dt_footer .t_paginate
+{    
+    margin-right: 3px;
+    padding-top: 2px;
+    float: right;
+    text-align: right;
+    text-transform: uppercase;
+    width: 300px;    
+}
+
+.no_hover, .no_hover:hover
+{
+    background: transparent !important;
+    padding-right: 0px;
+    padding-left: 0px;
+}
+
+#event_detail .table_list
+{
+    border-bottom: none;
+}
+
+#report_icon_container
+{
+	float: right;
+}
+
+/*  Alarm Filters  */
+
+.filters
+{
+    margin-top: 0px;
+    line-height: 16px;
+}
+
+#alarm_params
+{
+    position: relative;
+    clear: both;
+    margin: 5px 15px 0px 15px;
+    clear: both;
+}
+
+#alarm_params .p_column
+{
+    width: 33.33%;
+    position: relative;
+    margin: 0;
+    padding: 0;
+    float: left;
+
+}
+
+#alarm_params .search_button_container
+{
+	clear: both;
+	width: 100%;
+	margin: auto;
+	text-align: center;
+	padding-top: 20px;
+}
+
+#alarm_params label
+{
+    display: block;
+    margin: 7px 0 3px 0;
+}
+
+#alarm_params label.line
+{
+    display: inline-block;
+}
+
+#alarm_params input[type="search"], #alarm_params input[type="text"]
+{
+    width: 80%;
+    -webkit-appearance: none;
+    border: none;
+    background: rgba(150, 150, 150, 0.1);
+    padding: 5px;
+}
+
+#alarm_params select
+{
+    width: 80%;
+}
+
+#alarm_params .datepicker_range
+{
+    float: left;
+    width: 90%;
+    margin: 0;
+}
+
+.calendar
+{
+    margin-left: 20px;    
+}
+
+.calendar_from 
+{
+    width: 40%;
+}
+.calendar_to
+{
+    width: 40%;
+    padding-left: 0;
+}
+
+.calendar_separator
+{
+    width: 10%;
+}
+
+.datepicker_range input
+{
+    width: 100% !important;
+}
+
+#num_events
+{
+    width: 63% !important;
+    margin: 0 !important;
+}
+
+#num_events_op
+{
+    width: 15% !important;
+    margin: 0 !important;
+}
+
+td.nowrap
+{
+    white-space: nowrap;
+}
+
+
+#btn_al
+{
+    height: 20px;
+    cursor: pointer;
+    margin-right: 5px;
+}
+
+#graph_toggle_legend
+{
+    float: left;
+    margin-top: 2px;
+    margin-right: 7px;
+    line-height: 20px;
+}
+
+#graph_toggle
+{
+    float: left;
+    margin-top: 2px;
+    margin-right: 20px;
+    width: 50px;
+    height: 18px;
+    position: relative;    
+}
+
+.otx_icon
+{
+    height: 22px;
+}

@@ -1,0 +1,2 @@
+alienvault-mongodb/mongodb.monitrc etc/monit/alienvault
+alienvault-mongodb/mongodb etc/logrotate.d

@@ -1,0 +1,71 @@
+alienvault-i18n-messages (5.1.1-0) stable; urgency=low
+
+  * New release
+
+ -- AlienVault ENG Team <debian-devel@alienvault.com>  Wed, 29 Jul 2015 07:21:36 -0400
+
+alienvault-i18n-messages (5.1.0-0) stable; urgency=low
+
+  * New release
+
+ -- AlienVault ENG Team <debian-devel@alienvault.com>  Mon, 29 Jun 2015 11:29:21 -0400
+
+alienvault-i18n-messages (5.1-0) unstable; urgency=low
+
+  * New release
+
+ -- AlienVault ENG Team <debian-devel@alienvault.com>  Thu, 26 Mar 2015 08:54:37 -0400
+
+alienvault-i18n-messages (5.0-0) unstable; urgency=low
+
+  * New release
+
+ -- OSSIM Integration Team <ossim@ossim.net>  Mon, 26 Jan 2015 05:19:41 -0500
+
+alienvault-i18n-messages (4.16-0) unstable; urgency=low
+
+  * New release
+
+ -- OSSIM Integration Team <ossim@ossim.net>  Wed, 19 Nov 2014 06:41:50 -0500
+
+alienvault-i18n-messages (4.14-0) unstable; urgency=low
+
+  * New release
+
+ -- OSSIM Integration Team <ossim@ossim.net>  Fri, 24 Oct 2014 13:35:31 -0400
+
+alienvault-i18n-messages (4.13-0) unstable; urgency=low
+
+  * New release
+
+ -- OSSIM Integration Team <ossim@ossim.net>  Wed, 24 Sep 2014 10:33:00 -0400
+
+alienvault-i18n-messages (4.12-0) unstable; urgency=low
+
+  * New release
+
+ -- OSSIM Integration Team <ossim@ossim.net>  Sat, 16 Aug 2014 11:34:39 -0400
+
+alienvault-i18n-messages (4.11-0) unstable; urgency=low
+
+  * New release
+
+ -- OSSIM Integration Team <ossim@ossim.net>  Fri, 23 May 2014 03:27:58 -0400
+
+alienvault-i18n-messages (4.9-0) unstable; urgency=low
+
+  * New release
+
+ -- OSSIM Integration Team <ossim@ossim.net>  Fri, 23 May 2014 03:27:58 -0400
+
+alienvault-i18n-messages (4.8-0) unstable; urgency=low
+
+  * New release
+
+ -- OSSIM Integration Team <ossim@ossim.net>  Mon, 14 Apr 2014 05:55:02 -0400
+
+alienvault-i18n-messages (4.7.0-1) unstable; urgency=low
+
+  * source package automatically created by stdeb 0.6.0
+
+ -- AlienVault API team <packages@alienvault.com>  Thu, 03 Apr 2014 20:32:50 +0200

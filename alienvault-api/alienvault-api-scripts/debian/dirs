@@ -1,0 +1,12 @@
+/usr/share/alienvault/api_core/lib/alienvault/
+/usr/share/alienvault/api_core/bin/alienvault/
+/etc/ansible/playbooks
+/etc/ansible/playbooks/backups
+/etc/ansible/playbooks/backups/configuration
+/etc/ansible/playbooks/backups/environment
+/etc/ansible/playbooks/backups/event_alarms
+/etc/ansible/playbooks/common
+/etc/ansible/playbooks/demos
+/etc/ansible/backup/
+/var/alienvault/backup
+/var/alienvault/backup/downloaded

@@ -1,0 +1,19 @@
+/var/log/alienvault/rhythm/matches.log.old {
+    daily
+    rotate 5
+    compress
+    missingok
+    notifempty
+    nocopytruncate
+    nocreate
+}
+
+/var/log/alienvault/rhythm/rhythm.log {
+    daily
+    rotate 5
+    compress
+    missingok
+    notifempty
+    copytruncate
+    create 644 avrhythm alienvault
+}
